@@ -1,13 +1,17 @@
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, jsonify
 from flask_login import login_user, logout_user
 from app import app, login_manager, db
 from app.models import User
+import asyncio
+from sqlalchemy.exc import IntegrityError
 
-@app.route('/', methods=['GET'])    
+loop = asyncio.get_event_loop()
+
+@app.route('/')    
 def home():
-    return render_template('home.html')
+    return jsonify(message="Hello World :)")
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['POST'])
 def register():
     if request.method == 'POST':
         name = request.form['name']
@@ -27,10 +31,10 @@ def register():
 def login():
     if request.method == 'POST':
         email = request.form['email']
-        pwd = request.form['password']
+        password = request.form['password']
         user = User.query.filter_by(email=email).first()
 
-        if not user or not user.verify_password(pwd):
+        if not user or not user.verify_password(password):
             return redirect(url_for('login'))
 
         login_user(user)
